@@ -1,0 +1,13 @@
+streamlit
+textstat
+bcrypt
+pyjwt
+transformers
+torch
+nltk
+datasets
+pyngrok
+plotly
+pandas
+PyPDF2
+streamlit-option-menu
