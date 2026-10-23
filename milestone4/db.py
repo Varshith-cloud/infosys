@@ -373,6 +373,30 @@ def get_user_by_email(email):
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT email, created_at FROM users WHERE email = ?", (email,))
+def get_user_profile(email):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    columns = [
+        row[1] for row in c.execute("PRAGMA table_info(users)").fetchall()
+    ]
+
+    if "avatar" in columns:
+        c.execute(
+            "SELECT email, avatar FROM users WHERE email = ?",
+            (email,)
+        )
+        user = c.fetchone()
+    else:
+        c.execute(
+            "SELECT email FROM users WHERE email = ?",
+            (email,)
+        )
+        row = c.fetchone()
+        user = (row[0], None) if row else None
+
+    conn.close()
+    return user
     user = c.fetchone()
     conn.close()
     return dict(user) if user else None
