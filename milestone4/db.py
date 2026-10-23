@@ -236,3 +236,136 @@ def delete_user(email):
     c.execute("DELETE FROM users WHERE email = ?", (email,))
     conn.commit()
     conn.close()
+
+# --- Active Users, Feature Usage, and System Logs ---
+
+def set_user_active(email):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS active_users (
+            email TEXT PRIMARY KEY,
+            last_active TEXT
+        )
+    """)
+    c.execute("""
+        INSERT OR REPLACE INTO active_users (email, last_active)
+        VALUES (?, ?)
+    """, (email, _get_timestamp()))
+    conn.commit()
+    conn.close()
+
+
+def remove_active_user(email):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS active_users (
+            email TEXT PRIMARY KEY,
+            last_active TEXT
+        )
+    """)
+    c.execute("DELETE FROM active_users WHERE email = ?", (email,))
+    conn.commit()
+    conn.close()
+
+
+def get_active_users():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS active_users (
+            email TEXT PRIMARY KEY,
+            last_active TEXT
+        )
+    """)
+    c.execute("SELECT email, last_active FROM active_users ORDER BY last_active DESC")
+    result = c.fetchall()
+    conn.commit()
+    conn.close()
+    return result
+
+
+def track_feature_usage(feature_name, email=None):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS feature_usage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            feature_name TEXT,
+            email TEXT,
+            used_at TEXT
+        )
+    """)
+    c.execute("""
+        INSERT INTO feature_usage (feature_name, email, used_at)
+        VALUES (?, ?, ?)
+    """, (feature_name, email, _get_timestamp()))
+    conn.commit()
+    conn.close()
+
+
+def get_feature_usage_stats():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS feature_usage (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            feature_name TEXT,
+            email TEXT,
+            used_at TEXT
+        )
+    """)
+    c.execute("""
+        SELECT feature_name, COUNT(*) AS total
+        FROM feature_usage
+        GROUP BY feature_name
+        ORDER BY total DESC
+    """)
+    result = c.fetchall()
+    conn.commit()
+    conn.close()
+    return result
+
+
+def log_system_event(event_type, details=""):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS system_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT,
+            details TEXT,
+            created_at TEXT
+        )
+    """)
+    c.execute("""
+        INSERT INTO system_logs (event_type, details, created_at)
+        VALUES (?, ?, ?)
+    """, (event_type, str(details), _get_timestamp()))
+    conn.commit()
+    conn.close()
+
+
+def get_system_logs(limit=100):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS system_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT,
+            details TEXT,
+            created_at TEXT
+        )
+    """)
+    c.execute("""
+        SELECT event_type, details, created_at
+        FROM system_logs
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (limit,))
+    result = c.fetchall()
+    conn.commit()
+    conn.close()
+    return result
+
