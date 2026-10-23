@@ -368,4 +368,12 @@ def get_system_logs(limit=100):
     conn.commit()
     conn.close()
     return result
+def get_user_by_email(email):
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT email, created_at FROM users WHERE email = ?", (email,))
+    user = c.fetchone()
+    conn.close()
+    return dict(user) if user else None
 
