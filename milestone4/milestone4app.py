@@ -400,38 +400,6 @@ def summarizer_page():
                         st.session_state.summarization_models,
                         target_lang=target_lang
                     )
-                    
-def log_usage(email, feature, model_type, target_lang):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS usage_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT,
-            feature TEXT,
-            model_type TEXT,
-            target_lang TEXT,
-            created_at TEXT
-        )
-    """)
-
-    c.execute("""
-        INSERT INTO usage_logs
-        (email, feature, model_type, target_lang, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    """, (
-        email,
-        feature,
-        model_type,
-        target_lang,
-        _get_timestamp()
-    ))
-
-    conn.commit()
-    conn.close()
-
-
                     st.session_state.last_summary = summary
                     st.session_state.last_summary_text = text_input
                     st.session_state.last_summary_lang = target_lang
