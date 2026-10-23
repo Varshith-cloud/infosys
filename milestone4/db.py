@@ -401,3 +401,25 @@ def get_user_profile(email):
     conn.close()
     return dict(user) if user else None
 
+def log_usage(email, feature, details=""):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS usage_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT,
+            feature TEXT,
+            details TEXT,
+            created_at TEXT
+        )
+    """)
+
+    c.execute("""
+        INSERT INTO usage_logs (email, feature, details, created_at)
+        VALUES (?, ?, ?, ?)
+    """, (email, feature, str(details), _get_timestamp()))
+
+    conn.commit()
+    conn.close()
+
